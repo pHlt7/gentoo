@@ -26,6 +26,7 @@ declare -A COMMITS=(
 	[ftl-core]="0fe0162f4a18e8ef2fbac1d9a33af8e38cf7260e"
 	[ftl-desktop]="17216b03db7249600542e388bd4ea124478400e5"
 )
+YARN_VER="4.7.0"
 SRC_URI="${CARGO_CRATE_URIS}
 	https://github.com/ankitects/anki/archive/refs/tags/${PV}.tar.gz -> ${P}.gh.tar.gz
 	https://github.com/ankitects/anki-core-i18n/archive/${COMMITS[ftl-core]}.tar.gz
@@ -35,6 +36,7 @@ SRC_URI="${CARGO_CRATE_URIS}
 	https://github.com/gentoo-crate-dist/anki/releases/download/${PV}/${P}-crates.tar.xz
 	gui? (
 	https://git.sr.ht/~antecrescent/gentoo-files/blob/main/app-misc/anki/${P}-node_modules.tar.xz
+	https://git.sr.ht/~antecrescent/gentoo-files/blob/main/app-misc/anki/${P}-yarn-${YARN_VER}.tgz
 	)
 "
 # How to get an up-to-date summary of runtime JS libs' licenses:
@@ -102,7 +104,10 @@ BDEPEND="
 		${PYTHON_DEPS}
 		app-alternatives/ninja
 		>=net-libs/nodejs-20.12.1
-		sys-apps/yarn
+		|| (
+			sys-apps/yarn
+			net-libs/nodejs[corepack]
+		)
 		$(python_gen_cond_dep '
 			dev-python/pyqt6[${PYTHON_USEDEP}]
 			dev-python/wheel[${PYTHON_USEDEP}]
@@ -138,6 +143,9 @@ pkg_setup() {
 	export PROTOC_BINARY="${BROOT}"/usr/bin/protoc
 	export LIBSQLITE3_SYS_USE_PKG_CONFIG=1
 	export ZSTD_SYS_USE_PKG_CONFIG=1
+	if use gui && has_version -b net-libs/nodejs[corepack]; then
+		export COREPACK_DEFAULT_TO_LATEST=0
+	fi
 	rust_pkg_setup
 	use gui && python-single-r1_pkg_setup
 }
@@ -154,9 +162,14 @@ python_prepare_all() {
 		sed "/^REPO_ROOT/s|=.*|= \"${S}\"|" -i python/sphinx/conf.py || die
 	fi
 
-	# Unpin Yarn
-	sed -e '/"type": "module"/s/,//' \
-		-e '/packageManager/d' -i package.json || die
+	# Unpin and set up Yarn
+	if has_version -b net-libs/nodejs[corepack]; then
+		sed -e "s/yarn@[.0-9]*/yarn@${YARN_VER}/" -i package.json || die
+		corepack install -g --cache-only "${DISTDIR}"/${P}-yarn-${YARN_VER}.tgz || die
+	else
+		sed -e '/"type": "module"/s/,//' \
+			-e '/packageManager/d' -i package.json || die
+	fi
 
 	# Not running the black formatter on generated files saves a dependency
 	sed '/subprocess/d' -i pylib/tools/hookslib.py || die
