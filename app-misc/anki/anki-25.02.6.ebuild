@@ -48,7 +48,7 @@ LICENSE+="
 # Manually added crate licenses
 LICENSE+=" openssl"
 SLOT="0"
-KEYWORDS="~amd64 ~x86"
+KEYWORDS="~amd64"
 
 IUSE="+gui"
 REQUIRED_USE="gui? ( ${PYTHON_REQUIRED_USE} )"
