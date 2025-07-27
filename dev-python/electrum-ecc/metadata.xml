@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+<maintainer type="project">
+	<email>python@gentoo.org</email>
+</maintainer>
+<stabilize-allarches/>
+<upstream>
+	<bugs-to>https://github.com/spesmilo/electrum-ecc/issues</bugs-to>
+	<remote-id type="github">spesmilo/electrum-ecc</remote-id>
+	<remote-id type="pypi">electrum-ecc</remote-id>
+</upstream>
+<use>
+	<flag name="schnorr">Enable Schnorr signature module support</flag>
+</use>
+</pkgmetadata>
