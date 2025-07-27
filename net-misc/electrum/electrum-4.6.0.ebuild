@@ -109,6 +109,8 @@ pkg_postinst() {
 	xdg_desktop_database_update
 
 	optfeature "dark mode in GUI" dev-python/qdarkstyle
+	optfeature "Ledger hardware wallets" \
+	"dev-python/ledger-bitcoin[hid] dev-python/ledgercomm[hid] dev-python/hidapi"
 
 	ver_replacing -ge 4.3.4 && return
 
